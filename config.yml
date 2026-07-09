@@ -1,9 +1,50 @@
-- run:
-    name: Install SSHX
-    command: |
-      curl -sSf https://sshx.io/get | sh
+version: 2.1
 
-- run:
-    name: Start SSHX
-    command: |
-      sshx
+jobs:
+  temporary-vps:
+    machine:
+      image: ubuntu-2204:current
+
+    resource_class: medium
+
+    steps:
+      - checkout
+
+      - run:
+          name: Update System
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y \
+              curl wget git unzip zip \
+              tmux htop nano vim \
+              python3 python3-pip \
+              build-essential jq
+
+      - run:
+          name: Install SSHX
+          command: |
+            curl -sSf https://sshx.io/get | sh
+            sudo mv ~/.local/bin/sshx /usr/local/bin/sshx || true
+
+      - run:
+          name: Start SSHX
+          command: |
+            tmux new-session -d -s sshx "sshx"
+            sleep 5
+            tmux capture-pane -pt sshx
+
+      - run:
+          name: Keep VM Alive
+          no_output_timeout: 5h55m
+          command: |
+            echo "Temporary VPS is running..."
+            while true; do
+              echo "$(date) - Alive"
+              sleep 300
+            done
+
+workflows:
+  version: 2
+  run:
+    jobs:
+      - temporary-vps
