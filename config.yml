@@ -1,0 +1,9 @@
+- run:
+    name: Install SSHX
+    command: |
+      curl -sSf https://sshx.io/get | sh
+
+- run:
+    name: Start SSHX
+    command: |
+      sshx
